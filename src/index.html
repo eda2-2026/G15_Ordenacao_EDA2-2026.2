@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LogiMax Simulator</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --anim-speed: 0.5s;
+    }
+    .pixel-border {
+      box-shadow: -4px 0 0 0 #000, 4px 0 0 0 #000, 0 -4px 0 0 #000, 0 4px 0 0 #000, inset -4px -4px 0 0 rgba(0,0,0,0.3);
+    }
+    .pixel-box {
+      box-shadow: inset -4px -4px 0 0 rgba(0,0,0,0.4), inset 4px 4px 0 0 rgba(255,255,255,0.2);
+    }
+    .btn-arcade {
+      box-shadow: 0 4px 0 0 rgba(0,0,0,0.5);
+      transition: all 0.1s;
+    }
+    .btn-arcade:active:not(:disabled) {
+      transform: translateY(4px);
+      box-shadow: 0 0 0 0 rgba(0,0,0,0.5);
+    }
+    .btn-arcade:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #1f2937; }
+    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+    
+    .box {
+      transition: transform var(--anim-speed) ease-in-out, background-color 0.2s;
+    }
+    .robo-anim {
+      transition: transform var(--anim-speed) ease-in-out, height var(--anim-speed) ease-in-out;
+    }
+    .garra-anim {
+      transition: transform calc(var(--anim-speed) * 0.5) ease-in-out;
+    }
+    .highlight-compare {
+      background-color: #d97706 !important; /* amber-600 */
+      border-color: #fde047 !important; /* yellow-300 */
+      box-shadow: 0 0 15px rgba(253,224,71,0.8) !important;
+      transform: translateY(-5px);
+      z-index: 20;
+    }
+    .highlight-swap {
+      background-color: #dc2626 !important; /* red-600 */
+    }
+    .highlight-sorted {
+      background-color: #16a34a !important; /* green-600 */
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white font-mono min-h-screen flex flex-col p-4 selection:bg-purple-500">
+  
+  <!-- Cabeçalho -->
+  <header class="mb-3 flex justify-between items-end border-b-4 border-purple-600 pb-2 flex-shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 bg-blue-500 rounded-sm pixel-border flex items-center justify-center font-bold">L</div>
+      <h1 class="text-3xl font-bold text-purple-400 tracking-widest" style="text-shadow: 2px 2px 0px #000;">LOGIMAX</h1>
+    </div>
+    <div class="text-right">
+      <span class="text-yellow-400 font-bold block text-sm">SIMULADOR ALGORÍTMICO</span>
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="flex gap-4 mb-6">
+    
+    <!-- Painel Esquerdo: Galpão -->
+    <section class="flex-1 bg-purple-900 border-4 border-purple-950 rounded-lg p-4 relative flex flex-col shadow-inner overflow-hidden min-h-[500px]">
+      <div class="absolute top-4 left-4 text-purple-400 font-bold opacity-30 text-2xl tracking-widest pointer-events-none">
+        ESTOQUE <span id="lbl-estoque">EXPEDIÇÃO</span>
+      </div>
+
+      <!-- Garra do Robô (Visual e Animada) -->
+      <div id="robo" class="absolute top-0 left-0 flex flex-col items-center z-30 origin-top pointer-events-none robo-anim">
+        <!-- Trilho infinito fake -->
+        <div class="absolute -top-6 w-[3000px] -left-[1500px] h-4 bg-gray-800 border-y-2 border-gray-950 shadow-md pointer-events-none"></div>
+        
+        <!-- Braço que estica -->
+        <div id="robo-braco" class="w-6 h-12 bg-gray-600 border-x-2 border-gray-800 shadow-[inset_-2px_0_0_rgba(0,0,0,0.3)] robo-anim"></div> 
+        
+        <!-- Motor -->
+        <div id="robo-motor" class="w-28 h-12 bg-blue-600 border-2 border-blue-900 rounded-sm relative shadow-lg flex justify-center items-center pixel-box">
+           <div class="w-16 h-2 bg-blue-900 opacity-50 rounded-full"></div>
+        </div>
+        
+        <!-- Pinças -->
+        <div class="flex justify-between w-28 relative -top-1 px-1">
+          <!-- Fechada: rotate(0), Aberta: rotate(-25deg) -->
+          <div id="garra-esq" class="w-4 h-16 bg-blue-500 border-2 border-blue-900 transform rotate-0 rounded-b-sm pixel-box origin-top garra-anim"></div>
+          <!-- Fechada: rotate(0), Aberta: rotate(25deg) -->
+          <div id="garra-dir" class="w-4 h-16 bg-blue-500 border-2 border-blue-900 transform rotate-0 rounded-b-sm pixel-box origin-top garra-anim"></div>
+        </div>
+      </div>
+
+      <!-- Container do Corredor Principal -->
+      <div class="flex-1 flex flex-col justify-end pb-8">
+        <div id="corredor" class="flex items-end justify-center gap-3 w-full h-64 border-b-8 border-gray-800 pb-1 z-10 relative">
+          <!-- Caixas renderizadas pelo JS -->
+        </div>
+        <div class="w-full h-8 bg-gray-900 border-t-4 border-gray-700 absolute bottom-0 left-0 flex flex-col">
+          <div class="h-2 w-full bg-gray-800"></div>
+          <div class="text-center text-gray-500 text-xs mt-1 tracking-widest" id="legenda-principal">PRATELEIRA PRINCIPAL</div>
+        </div>
+      </div>
+
+      <!-- Área de Transbordo (Merge) / Baias (Radix) -->
+      <div id="area-extra" class="h-40 border-t-4 border-purple-950 pt-4 hidden flex-col justify-end relative">
+        <div id="corredor-extra" class="flex items-end justify-center gap-2 w-full h-24 border-b-8 border-gray-800 pb-1 z-10 relative"></div>
+        <div class="text-center text-gray-400 text-xs mt-2 tracking-widest font-bold" id="legenda-extra">ÁREA DE TRANSBORDO</div>
+      </div>
+
+    </section>
+
+    <!-- Painel Direito: Mais compacto -->
+    <aside class="w-[380px] flex flex-col gap-3 flex-shrink-0">
+      
+      <!-- Controles -->
+      <div class="bg-gray-800 border-2 border-gray-700 rounded-lg p-3 shadow-lg">
+        <div class="flex justify-between items-center mb-2">
+          <label class="text-[11px] text-purple-300 font-bold uppercase tracking-wider">Algoritmo:</label>
+          <select id="cenario" class="bg-gray-900 text-[10px] text-gray-300 border border-gray-600 p-1 rounded outline-none focus:border-purple-500">
+            <option value="aleatorio">Cenário: Aleatório</option>
+            <option value="quase">Cenário: Quase Ordenado</option>
+            <option value="inverso">Cenário: Ordem Inversa</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <button onclick="selectAlgo('bubble')" id="btn-bubble" class="algo-btn bg-gray-900 text-gray-400 text-xs font-bold py-2 rounded btn-arcade border-2 border-gray-700 hover:bg-gray-700">BUBBLE SORT</button>
+          <button onclick="selectAlgo('insertion')" id="btn-insertion" class="algo-btn bg-purple-700 text-white text-xs font-bold py-2 rounded btn-arcade border-2 border-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.5)]">INSERTION</button>
+          <button onclick="selectAlgo('merge')" id="btn-merge" class="algo-btn bg-gray-900 text-gray-400 text-xs font-bold py-2 rounded btn-arcade border-2 border-gray-700 hover:bg-gray-700">MERGE SORT</button>
+          <button onclick="selectAlgo('radix')" id="btn-radix" class="algo-btn bg-gray-900 text-gray-400 text-xs font-bold py-2 rounded btn-arcade border-2 border-gray-700 hover:bg-gray-700">RADIX LSD</button>
+        </div>
+
+        <div class="flex gap-2 mb-2">
+          <button id="btn-iniciar" onclick="startSim()" class="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-lg btn-arcade border-2 border-green-800">
+            ▶ INICIAR
+          </button>
+          <button id="btn-gerar" onclick="gerarCaixas()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-3 rounded-lg btn-arcade border-2 border-blue-800 text-[10px]">
+            NOVO GALPÃO
+          </button>
+        </div>
+        
+        <div class="flex items-center gap-2 mt-2">
+          <span class="text-[10px] text-gray-400 uppercase">Velocidade:</span>
+          <input type="range" id="speed" min="1" max="100" value="50" class="flex-1 cursor-pointer">
+        </div>
+      </div>
+
+      <!-- Métricas da Rodada -->
+      <div class="bg-gray-800 border-2 border-gray-700 rounded-lg p-3 shadow-lg">
+        <h2 class="text-[11px] text-yellow-400 font-bold mb-2 uppercase tracking-wider border-b border-gray-700 pb-1">Métricas da Simulação</h2>
+        <div class="grid grid-cols-2 gap-2 text-sm bg-black p-2 rounded border border-gray-700 shadow-inner">
+          <div>
+            <span class="text-gray-500 block text-[10px] uppercase">Custo</span>
+            <span id="metric-custo" class="font-bold text-green-400 text-[13px]">R$ 0,00</span>
+          </div>
+          <div>
+            <span class="text-gray-500 block text-[10px] uppercase">Tempo</span>
+            <span id="metric-tempo" class="font-bold text-yellow-400 text-[13px]">0.0s</span>
+          </div>
+          <div>
+            <span class="text-gray-500 block text-[10px] uppercase">Leituras</span>
+            <span id="metric-leituras" class="font-bold text-white text-[13px]">0</span>
+          </div>
+          <div>
+            <span class="text-gray-500 block text-[10px] uppercase">Movimentos</span>
+            <span id="metric-movs" class="font-bold text-white text-[13px]">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Código Fonte -->
+      <div class="bg-gray-800 border-2 border-gray-700 rounded-lg flex-1 flex flex-col shadow-lg overflow-hidden min-h-[250px]">
+        <h2 class="text-[11px] text-gray-400 p-2 border-b-2 border-gray-700 bg-gray-900 tracking-wider">
+          LÓGICA EM EXECUÇÃO
+        </h2>
+        <div id="code-panel" class="p-3 text-[12px] leading-relaxed overflow-y-auto font-mono text-gray-200 flex-1 bg-[#1e1e1e]">
+          <!-- Preenchido pelo JS -->
+        </div>
+        <div class="bg-black text-blue-400 text-[11px] p-2 border-t-2 border-gray-700 font-mono flex items-center gap-2">
+          <span class="animate-pulse">_></span>
+          <span id="log-terminal">Aguardando comando...</span>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- PLACAR DE DESEMPENHO (Seção Inferior) -->
+  <section class="bg-gray-800 border-2 border-gray-700 rounded-lg p-4 shadow-lg mb-4">
+    <div class="flex justify-between items-end mb-3 border-b-2 border-gray-700 pb-2">
+      <h2 class="text-lg text-yellow-400 font-bold flex items-center gap-2">
+        <span>🏆 PLACAR DE DESEMPENHO</span>
+      </h2>
+      <button class="text-xs bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded text-white font-bold btn-arcade border-2 border-purple-800" onclick="alert('Recurso a ser implementado pela dupla: rodar os 4 algoritmos em batch para preencher a tabela!')">SIMULAR TODOS (1000 CAIXAS)</button>
+    </div>
+    
+    <div class="overflow-x-auto rounded border-2 border-gray-700 shadow-inner">
+      <table class="w-full text-left text-sm text-gray-300 bg-black min-w-[600px]">
+        <thead class="bg-gray-900 text-gray-400 uppercase text-[11px] tracking-wider">
+          <tr>
+            <th class="p-3 pl-4 font-bold border-b border-gray-700">Algoritmo</th>
+            <th class="p-3 font-bold border-b border-gray-700">Tempo Total</th>
+            <th class="p-3 font-bold border-b border-gray-700">Custo Total</th>
+            <th class="p-3 font-bold border-b border-gray-700">Leituras</th>
+            <th class="p-3 font-bold border-b border-gray-700">Movimentações</th>
+            <th class="p-3 font-bold border-b border-gray-700">Espaço Extra</th>
+            <th class="p-3 text-center font-bold border-b border-gray-700">Avaliação</th>
+          </tr>
+        </thead>
+        <tbody class="font-mono">
+          <tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">
+            <td class="p-3 pl-4 text-purple-400 font-bold">Bubble Sort</td>
+            <td class="p-3 text-yellow-400">--</td>
+            <td class="p-3 text-green-400">--</td>
+            <td class="p-3 text-white">--</td>
+            <td class="p-3 text-white">--</td>
+            <td class="p-3 text-white">O(1)</td>
+            <td class="p-3 text-center"><span class="bg-gray-800 text-gray-500 px-2 py-1 rounded text-xs">-</span></td>
+          </tr>
+          <tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors bg-[#2d1b4e]">
+            <td class="p-3 pl-4 text-white font-bold border-l-4 border-purple-500">Insertion Sort</td>
+            <td class="p-3 text-yellow-400" id="placar-insertion-tempo">--</td>
+            <td class="p-3 text-green-400" id="placar-insertion-custo">--</td>
+            <td class="p-3 text-white" id="placar-insertion-leituras">--</td>
+            <td class="p-3 text-white" id="placar-insertion-movs">--</td>
+            <td class="p-3 text-white">O(1)</td>
+            <td class="p-3 text-center"><span class="bg-blue-900/50 text-blue-400 px-2 py-1 rounded text-xs">MÉDIO</span></td>
+          </tr>
+          <tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">
+            <td class="p-3 pl-4 text-purple-400 font-bold">Merge Sort</td>
+            <td class="p-3 text-yellow-400">--</td>
+            <td class="p-3 text-green-400">--</td>
+            <td class="p-3 text-white">--</td>
+            <td class="p-3 text-white">--</td>
+            <td class="p-3 text-red-400">O(n)</td>
+            <td class="p-3 text-center"><span class="bg-gray-800 text-gray-500 px-2 py-1 rounded text-xs">-</span></td>
+          </tr>
+          <tr class="hover:bg-gray-900 transition-colors">
+            <td class="p-3 pl-4 text-purple-400 font-bold">Radix Sort LSD</td>
+            <td class="p-3 text-yellow-400">--</td>
+            <td class="p-3 text-green-400">--</td>
+            <td class="p-3 text-white">--</td>
+            <td class="p-3 text-white">--</td>
+            <td class="p-3 text-red-400">O(n)</td>
+            <td class="p-3 text-center"><span class="bg-gray-800 text-gray-500 px-2 py-1 rounded text-xs">-</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <script src="calculo.js"></script>
+  <script src="insertion.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
