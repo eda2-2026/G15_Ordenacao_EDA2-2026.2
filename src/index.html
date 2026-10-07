@@ -53,6 +53,27 @@
     .highlight-sorted {
       background-color: #16a34a !important; /* green-600 */
     }
+
+    /* Transbordo (Merge) e baias (Radix) */
+    .slot-vazio { height: 0; }
+    .baia {
+      flex: 1 1 0; min-width: 0; max-width: 4rem; height: 100%;
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .baia-pilha {
+      flex: 1 1 auto; display: flex; flex-direction: column-reverse;
+      justify-content: flex-start; gap: 2px;
+    }
+    .baia-rotulo {
+      text-align: center; font-size: 11px; font-weight: 700; color: #9ca3af;
+      border-top: 2px solid #374151; margin-top: 2px;
+    }
+    .box-mini { width: 100% !important; height: 22px !important; font-size: 10px !important; flex: 0 0 auto !important; }
+    .slot-mini {
+      width: 100%; height: 22px; flex: 0 0 auto; box-sizing: border-box;
+      border: 2px dashed #6b7280; opacity: 0.7;
+    }
+    .digito-ativo { background: #000; color: #fde047; padding: 0 1px; }
   </style>
 </head>
 <body class="bg-gray-900 text-white font-mono min-h-screen flex flex-col p-4 selection:bg-purple-500">
@@ -100,19 +121,19 @@
       </div>
 
       <!-- Container do Corredor Principal -->
-      <div class="flex-1 flex flex-col justify-end pb-8">
+      <div class="flex-1 flex flex-col justify-end pb-8 relative">
         <div id="corredor" class="flex items-end justify-center gap-3 w-full h-64 border-b-8 border-gray-800 pb-1 z-10 relative">
           <!-- Caixas renderizadas pelo JS -->
         </div>
-        <div class="w-full h-8 bg-gray-900 border-t-4 border-gray-700 absolute bottom-0 left-0 flex flex-col">
+        <div class="h-8 bg-gray-900 border-t-4 border-gray-700 absolute -bottom-4 -left-4 -right-4 flex flex-col">
           <div class="h-2 w-full bg-gray-800"></div>
           <div class="text-center text-gray-500 text-xs mt-1 tracking-widest" id="legenda-principal">PRATELEIRA PRINCIPAL</div>
         </div>
       </div>
 
       <!-- Área de Transbordo (Merge) / Baias (Radix) -->
-      <div id="area-extra" class="h-40 border-t-4 border-purple-950 pt-4 hidden flex-col justify-end relative">
-        <div id="corredor-extra" class="flex items-end justify-center gap-2 w-full h-24 border-b-8 border-gray-800 pb-1 z-10 relative"></div>
+      <div id="area-extra" class="mt-4 border-t-4 border-purple-950 pt-4 hidden flex-col justify-end relative">
+        <div id="corredor-extra" class="flex items-end justify-center gap-3 w-full h-64 border-b-8 border-gray-800 pb-1 z-10 relative"></div>
         <div class="text-center text-gray-400 text-xs mt-2 tracking-widest font-bold" id="legenda-extra">ÁREA DE TRANSBORDO</div>
       </div>
 
@@ -219,10 +240,10 @@
         <tbody class="font-mono">
           <tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">
             <td class="p-3 pl-4 text-purple-400 font-bold">Bubble Sort</td>
-            <td class="p-3 text-yellow-400">--</td>
-            <td class="p-3 text-green-400">--</td>
-            <td class="p-3 text-white">--</td>
-            <td class="p-3 text-white">--</td>
+            <td class="p-3 text-yellow-400" id="placar-bubble-tempo">--</td>
+            <td class="p-3 text-green-400" id="placar-bubble-custo">--</td>
+            <td class="p-3 text-white" id="placar-bubble-leituras">--</td>
+            <td class="p-3 text-white" id="placar-bubble-movs">--</td>
             <td class="p-3 text-white">O(1)</td>
             <td class="p-3 text-center"><span class="bg-gray-800 text-gray-500 px-2 py-1 rounded text-xs">-</span></td>
           </tr>
@@ -237,19 +258,19 @@
           </tr>
           <tr class="border-b border-gray-800 hover:bg-gray-900 transition-colors">
             <td class="p-3 pl-4 text-purple-400 font-bold">Merge Sort</td>
-            <td class="p-3 text-yellow-400">--</td>
-            <td class="p-3 text-green-400">--</td>
-            <td class="p-3 text-white">--</td>
-            <td class="p-3 text-white">--</td>
+            <td class="p-3 text-yellow-400" id="placar-merge-tempo">--</td>
+            <td class="p-3 text-green-400" id="placar-merge-custo">--</td>
+            <td class="p-3 text-white" id="placar-merge-leituras">--</td>
+            <td class="p-3 text-white" id="placar-merge-movs">--</td>
             <td class="p-3 text-red-400">O(n)</td>
             <td class="p-3 text-center"><span class="bg-gray-800 text-gray-500 px-2 py-1 rounded text-xs">-</span></td>
           </tr>
           <tr class="hover:bg-gray-900 transition-colors">
             <td class="p-3 pl-4 text-purple-400 font-bold">Radix Sort LSD</td>
-            <td class="p-3 text-yellow-400">--</td>
-            <td class="p-3 text-green-400">--</td>
-            <td class="p-3 text-white">--</td>
-            <td class="p-3 text-white">--</td>
+            <td class="p-3 text-yellow-400" id="placar-radix-tempo">--</td>
+            <td class="p-3 text-green-400" id="placar-radix-custo">--</td>
+            <td class="p-3 text-white" id="placar-radix-leituras">--</td>
+            <td class="p-3 text-white" id="placar-radix-movs">--</td>
             <td class="p-3 text-red-400">O(n)</td>
             <td class="p-3 text-center"><span class="bg-gray-800 text-gray-500 px-2 py-1 rounded text-xs">-</span></td>
           </tr>
@@ -260,6 +281,9 @@
 
   <script src="calculo.js"></script>
   <script src="insertion.js"></script>
+  <script src="bubblesort.js"></script>
+  <script src="mergesort.js"></script>
+  <script src="radixlsd.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
