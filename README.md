@@ -100,38 +100,44 @@ No simulador o Bubble roda sem parada antecipada, por isso o melhor caso dele n�
 
 ## Como usar o simulador
 
-1. Escolha o algoritmo nas abas.
-2. Escolha o cenário: aleatório, quase ordenado ou ordem inversa.
-3. Use Executar, Passo a passo, Reiniciar, a velocidade e Novo galpão.
-4. Acompanhe o código com a linha em execução, a mensagem do que o robô está fazendo, os contadores e o corredor. O Merge mostra a área de transbordo e o Radix mostra as 10 baias.
-5. Nos botões do placar, rode os quatro algoritmos de uma vez com 12 ou com 1.000 caixas. A linha mais barata fica destacada em verde.
+1. Escolha o algoritmo nos botões: **Bubble Sort**, **Insertion Sort**, **Merge Sort** ou **Radix LSD**.
+2. Escolha o cenário inicial: **Aleatório**, **Quase Ordenado** ou **Ordem Inversa**, e clique em **Novo galpão**.
+3. Use o botão **▶ Iniciar** (que se torna **◼ Parar** durante a execução), controle o ritmo na barra de **Velocidade** e gere novas configurações com **Novo galpão**.
+4. Acompanhe a lógica em tempo real: o código sendo executado, a mensagem do robô no terminal, os contadores de métricas e a prateleira. O Merge exibe a área de transbordo e o Radix apresenta as 10 baias.
+5. Ao concluir, confira as métricas registradas na rodada e atualizadas na tabela do placar de desempenho.
 
-## Deploy no GitHub Pages
+## Como rodar o projeto
 
-O simulador é um único arquivo, `galpao-logimax.html`, com HTML, CSS e JavaScript juntos. Não há servidor, banco de dados nem etapa de build: toda a simulação roda no navegador de quem abre a página. O GitHub Pages só precisa entregar esse arquivo, que é um site estático.
+Por se tratar de uma aplicação web estática (HTML, CSS e JavaScript), não há necessidade de compilação ou instalação de dependências.
 
-Para publicar:
+### 1. Execução local
+- **Opção rápida:** Abra o arquivo `index.html` diretamente no seu navegador.
+- **Opção com servidor HTTP local:**
+  ```bash
+  python3 -m http.server 8000
+  ```
+  Depois, acesse no navegador: `http://localhost:8000`.
 
-1. Coloque o arquivo na raiz do repositório e renomeie para `index.html`. O Pages abre esse nome por padrão. Se preferir manter `galpao-logimax.html`, ele abre em `https://<usuario>.github.io/<repositorio>/galpao-logimax.html`.
-2. No repositório, vá em Settings, depois Pages.
-3. Em Source, escolha Deploy from a branch, selecione a branch `main` e a pasta `/ (root)`, e salve.
-4. Aguarde alguns minutos e copie o endereço que o Pages mostrar para o campo de link no começo deste README.
+### 2. Deploy no GitHub Pages
+1. No repositório no GitHub, vá em **Settings** > **Pages**.
+2. Em **Source**, escolha **Deploy from a branch**, selecione a branch `main` e a pasta `/ (root)`, e salve.
+3. O simulador fica imediatamente disponível na URL raiz do Pages: `https://<usuario>.github.io/<repositorio>/`.
 
 ## Estrutura do projeto
 
 ```
 G15_Ordenacao_EDA2-2026.2/
-├── README.md                   # este arquivo
-├── src/
-│   ├── main.py                 # descrição
-│   ├── gui.py                  # simulador
-│   ├── algoritmo1.py           # descrição
-│   ├── algoritmo2.py           # descrição
-│   ├── algoritmo3.py           # descrição
-│   └── algoritmo4.py           # descrição
-└── tests/
-    └── teste.py                # descrição
-
+├── README.md                   # Documentação do projeto
+├── index.html                  # Interface visual da aplicação (HTML/CSS)
+├── docs/
+│   └── img/                    # Capturas de tela e imagens da interface
+└── src/                        # Funções e módulos JavaScript dos algoritmos
+    ├── app.js                  # Controle central da interface, robô e estado
+    ├── calculo.js              # Modelo de cálculo de métricas (custo e tempo)
+    ├── bubblesort.js           # Implementação do Bubble Sort
+    ├── insertion.js            # Implementação do Insertion Sort
+    ├── mergesort.js            # Implementação do Merge Sort
+    └── radixlsd.js             # Implementação do Radix Sort LSD
 ```
 
 ## Testes
@@ -140,13 +146,12 @@ _Registrar aqui os testes feitos no simulador. Modelo sugerido:_
 
 | Cenário | Tamanho | Algoritmo | O que verificar | Resultado | Ok? |
 |---|---|---|---|---|---|
-| Aleatório | 12 | Todos | Corredor termina em ordem crescente | | |
-| Aleatório | 1.000 | Todos | Placar roda sem travar e o mais barato fica em verde | | |
-| Quase ordenado | 12 | Insertion | Poucas movimentações em relação ao Bubble | | |
-| Ordem inversa | 12 | Insertion | Pior caso: muitas leituras e movimentações | | |
-| Qualquer | 12 | Radix LSD | Passadas de unidades, dezenas e centenas, com as 10 baias | | |
-| Qualquer | 12 | Merge | Transbordo enche e esvazia a cada fusão | | |
-| Qualquer | 12 | Todos | Valores repetidos continuam na mesma ordem relativa (estabilidade) | | |
+| Aleatório | 15 | Todos | Corredor termina em ordem crescente | Conforme esperado | Sim |
+| Quase ordenado | 15 | Insertion | Poucas movimentações em relação ao Bubble | Conforme esperado | Sim |
+| Ordem inversa | 15 | Insertion | Pior caso: muitas leituras e movimentações | Conforme esperado | Sim |
+| Qualquer | 15 | Radix LSD | Passadas de unidades, dezenas e centenas, com as 10 baias | Conforme esperado | Sim |
+| Qualquer | 15 | Merge | Transbordo enche e esvazia a cada fusão | Conforme esperado | Sim |
+| Qualquer | 15 | Todos | Valores repetidos continuam na mesma ordem relativa (estabilidade) | Conforme esperado | Sim |
 
 ## Prints da interface
 

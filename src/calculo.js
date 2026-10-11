@@ -3,6 +3,7 @@ const C = {
   movimento: { custo: 0.50, tempo: 2.0 },
   area: { custo: 2.00, tempo: 0 }
 };
+if (typeof window !== 'undefined') window.C = C;
 
 let metricas = { leituras: 0, movs: 0, area: 0 };
 

@@ -155,15 +155,55 @@ function moveRobotPosition(x) {
 }
 
 function getDelay() {
-  const speed = document.getElementById('speed').value;
-  const delayMs = 800 - (speed * 7); // Range: 100ms a 800ms
-  document.documentElement.style.setProperty('--anim-speed', `${delayMs / 1000}s`);
+  const speedInput = document.getElementById('speed');
+  const speed = speedInput ? parseInt(speedInput.value, 10) : 50;
+  
+  // Curva de velocidade expandida (1 a 100):
+  // 1-30: 800ms a 300ms (lento / didático)
+  // 31-70: 300ms a 60ms (moderado / padrão)
+  // 71-90: 60ms a 15ms (rápido)
+  // 91-100: 15ms a 2ms (turbo / quase instantâneo)
+  let delayMs;
+  if (speed <= 30) {
+    delayMs = Math.round(800 - (speed - 1) * (500 / 29));
+  } else if (speed <= 70) {
+    delayMs = Math.round(300 - (speed - 30) * (240 / 40));
+  } else if (speed <= 90) {
+    delayMs = Math.round(60 - (speed - 70) * (45 / 20));
+  } else {
+    delayMs = Math.max(2, Math.round(15 - (speed - 90) * (13 / 10)));
+  }
+
+  const animSeconds = Math.max(0.02, delayMs / 1000);
+  document.documentElement.style.setProperty('--anim-speed', `${animSeconds}s`);
+
+  const lbl = document.getElementById('speed-label');
+  if (lbl) {
+    if (speed < 30) lbl.innerText = "Lento";
+    else if (speed < 65) lbl.innerText = "Médio";
+    else if (speed < 88) lbl.innerText = "Rápido";
+    else if (speed < 98) lbl.innerText = "Muito Rápido";
+    else lbl.innerText = "⚡ Turbo";
+  }
+
   return delayMs;
 }
 
 async function sleep(msOverride) {
+  const d = msOverride !== undefined ? msOverride : getDelay();
+  if (d <= 2) {
+    return new Promise(resolve => {
+      const timeout = setTimeout(resolve, 0);
+      if (abortController) {
+        abortController.signal.addEventListener('abort', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+      }
+    });
+  }
   return new Promise(resolve => {
-    const timeout = setTimeout(resolve, msOverride || getDelay());
+    const timeout = setTimeout(resolve, d);
     if(abortController) {
       abortController.signal.addEventListener('abort', () => {
         clearTimeout(timeout);
@@ -248,10 +288,12 @@ async function swapDOM(idxA, idxB) {
   const deltaX = rectB.left - rectA.left;
   
   // 1. O Robô vai até a caixa A, abre a garra e desce nela
+  await checkAbort();
   await moveRobotToBox(boxA);
   await actRobotGarra('abrir');
   await actRobotGarra('descer', boxA);
   await actRobotGarra('fechar');
+  await checkAbort();
   boxA.classList.add('highlight-swap');
   
   // Salva a altura exata que o braço precisou para encostar na caixa A no chão
@@ -266,11 +308,13 @@ async function swapDOM(idxA, idxB) {
   // 2. Levanta o braço e a caixa ao mesmo tempo, pela mesma distância exata
   boxA.style.transform = `translateY(-${actualLift}px)`;
   await actRobotGarra('subir', newArmHeight);
+  await checkAbort();
   
   // 3. Move o Robô E a Caixa A pelo ar. A Caixa B desliza por baixo para a vaga de A.
   boxA.style.transform = `translate(${deltaX}px, -${actualLift}px)`;
   boxB.style.transform = `translate(${-deltaX}px, 0px)`;
   await moveRobotToBox(boxB);
+  await checkAbort();
   
   // 4. Troca real no DOM sem que o usuário perceba visualmente (FLIP invertido)
   const parent = boxA.parentNode;
@@ -452,12 +496,241 @@ async function transportar(c, slotDestino, opcoes = {}) {
   await actRobotGarra('fechar');
 }
 
-// --- PLACAR ---
+// --- PLACAR E SIMULAÇÃO EM LOTE ---
+function formatarMoeda(val) {
+  return `R$ ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function formatarTempo(val) {
+  if (val >= 3600) {
+    const h = Math.floor(val / 3600);
+    const m = Math.floor((val % 3600) / 60);
+    return `${h}h ${m}min`;
+  }
+  if (val >= 60) {
+    const m = Math.floor(val / 60);
+    const s = Math.round(val % 60);
+    return `${m}min ${s}s`;
+  }
+  return `${val.toFixed(1)}s`;
+}
+
 function atualizarPlacar(algo) {
+  const row = document.getElementById(`row-${algo}`);
   document.getElementById(`placar-${algo}-tempo`).innerText = document.getElementById('metric-tempo').innerText;
   document.getElementById(`placar-${algo}-custo`).innerText = document.getElementById('metric-custo').innerText;
-  document.getElementById(`placar-${algo}-leituras`).innerText = metricas.leituras;
-  document.getElementById(`placar-${algo}-movs`).innerText = metricas.movs;
+  document.getElementById(`placar-${algo}-leituras`).innerText = metricas.leituras.toLocaleString('pt-BR');
+  document.getElementById(`placar-${algo}-movs`).innerText = metricas.movs.toLocaleString('pt-BR');
+
+  const cellAvaliacao = document.getElementById(`placar-${algo}-avaliacao`);
+  if (cellAvaliacao) {
+    cellAvaliacao.innerHTML = `<span class="bg-purple-900/40 text-purple-300 border border-purple-500 px-2 py-1 rounded text-xs font-bold">RODADO</span>`;
+  }
+}
+
+function batchBubble(orig) {
+  const a = orig.slice();
+  const n = a.length;
+  let leituras = 0, movs = 0;
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n - i - 1; j++) {
+      leituras += 2;
+      if (a[j] > a[j + 1]) {
+        const tmp = a[j]; a[j] = a[j + 1]; a[j + 1] = tmp;
+        movs += 2;
+      }
+    }
+  }
+  return { leituras, movs, area: 0 };
+}
+
+function batchInsertion(orig) {
+  const a = orig.slice();
+  const n = a.length;
+  let leituras = 0, movs = 0;
+  for (let i = 1; i < n; i++) {
+    let j = i;
+    while (j > 0) {
+      leituras += 2;
+      if (a[j - 1] > a[j]) {
+        const tmp = a[j - 1]; a[j - 1] = a[j]; a[j] = tmp;
+        movs += 2;
+        j--;
+      } else {
+        break;
+      }
+    }
+  }
+  return { leituras, movs, area: 0 };
+}
+
+function batchMerge(orig) {
+  const a = orig.slice();
+  const n = a.length;
+  let leituras = 0, movs = 0, maxArea = 0;
+
+  function mergeSortRec(inicio, fim) {
+    if (inicio >= fim) return;
+    const meio = Math.floor((inicio + fim) / 2);
+    mergeSortRec(inicio, meio);
+    mergeSortRec(meio + 1, fim);
+    mesclar(inicio, meio, fim);
+  }
+
+  function mesclar(inicio, meio, fim) {
+    const tam = fim - inicio + 1;
+    if (tam > maxArea) maxArea = tam;
+    movs += tam; // levar ao transbordo
+
+    const aux = a.slice();
+    let i = inicio;
+    let j = meio + 1;
+    let k = inicio;
+
+    while (i <= meio && j <= fim) {
+      leituras += 2;
+      if (aux[i] <= aux[j]) {
+        a[k] = aux[i];
+        i++;
+      } else {
+        a[k] = aux[j];
+        j++;
+      }
+      movs += 1; // devolver ao corredor
+      k++;
+    }
+
+    while (i <= meio) {
+      a[k++] = aux[i++];
+      movs += 1;
+    }
+    while (j <= fim) {
+      a[k++] = aux[j++];
+      movs += 1;
+    }
+  }
+
+  mergeSortRec(0, n - 1);
+  return { leituras, movs, area: maxArea };
+}
+
+function batchRadix(orig) {
+  const a = orig.slice();
+  const n = a.length;
+  let leituras = 0, movs = 0, area = n;
+  let exp = 1;
+
+  for (let d = 0; d < 3; d++) {
+    const baias = Array.from({ length: 10 }, () => []);
+    for (let i = 0; i < n; i++) {
+      leituras += 1;
+      const dig = Math.floor(a[i] / exp) % 10;
+      baias[dig].push(a[i]);
+      movs += 1;
+    }
+    let k = 0;
+    for (let b = 0; b < 10; b++) {
+      for (let q = 0; q < baias[b].length; q++) {
+        a[k++] = baias[b][q];
+        movs += 1;
+      }
+    }
+    exp *= 10;
+  }
+  return { leituras, movs, area };
+}
+
+function calcularMetricasCusto(m) {
+  const modeloC = (typeof C !== 'undefined') ? C : (typeof window !== 'undefined' ? window.C : null);
+  const custo = (m.leituras * modeloC.leitura.custo) + (m.movs * modeloC.movimento.custo) + (m.area * modeloC.area.custo);
+  const tempo = (m.leituras * modeloC.leitura.tempo) + (m.movs * modeloC.movimento.tempo);
+  return { custo, tempo, ...m };
+}
+
+function simularTodos(valores, rotulo = "Simulação") {
+  if (!valores || valores.length === 0) {
+    alert("Nenhuma caixa disponível para simular!");
+    return;
+  }
+
+  const subtitulo = document.getElementById('placar-subtitulo');
+  if (subtitulo) subtitulo.innerText = `Processando simulação para ${valores.length.toLocaleString('pt-BR')} caixas...`;
+
+  const resultados = {
+    bubble: calcularMetricasCusto(batchBubble(valores)),
+    insertion: calcularMetricasCusto(batchInsertion(valores)),
+    merge: calcularMetricasCusto(batchMerge(valores)),
+    radix: calcularMetricasCusto(batchRadix(valores))
+  };
+
+  const algos = ['bubble', 'insertion', 'merge', 'radix'];
+  const custos = algos.map(k => resultados[k].custo);
+  const menorCusto = Math.min(...custos);
+  const maiorCusto = Math.max(...custos);
+
+  algos.forEach(algo => {
+    const res = resultados[algo];
+    const row = document.getElementById(`row-${algo}`);
+    
+    document.getElementById(`placar-${algo}-tempo`).innerText = formatarTempo(res.tempo);
+    document.getElementById(`placar-${algo}-custo`).innerText = formatarMoeda(res.custo);
+    document.getElementById(`placar-${algo}-leituras`).innerText = res.leituras.toLocaleString('pt-BR');
+    document.getElementById(`placar-${algo}-movs`).innerText = res.movs.toLocaleString('pt-BR');
+
+    if (row) {
+      row.classList.remove('bg-green-950/40', 'border-l-4', 'border-green-500', 'bg-blue-950/20');
+    }
+
+    const cellAvaliacao = document.getElementById(`placar-${algo}-avaliacao`);
+    if (res.custo === menorCusto) {
+      if (row) row.classList.add('bg-green-950/40', 'border-l-4', 'border-green-500');
+      if (cellAvaliacao) {
+        cellAvaliacao.innerHTML = `<span class="bg-green-600/40 text-green-300 border border-green-500 px-2 py-1 rounded text-xs font-bold">🏆 MELHOR</span>`;
+      }
+    } else {
+      let badge = '';
+      if (res.custo <= menorCusto * 1.5) {
+        badge = `<span class="bg-blue-900/40 text-blue-300 border border-blue-600 px-2 py-1 rounded text-xs font-bold">BOM</span>`;
+      } else if (res.custo < maiorCusto) {
+        badge = `<span class="bg-yellow-900/40 text-yellow-300 border border-yellow-600 px-2 py-1 rounded text-xs font-bold">MÉDIO</span>`;
+      } else {
+        badge = `<span class="bg-red-900/40 text-red-300 border border-red-600 px-2 py-1 rounded text-xs font-bold">ALTO CUSTO</span>`;
+      }
+      if (cellAvaliacao) cellAvaliacao.innerHTML = badge;
+    }
+  });
+
+  if (subtitulo) {
+    const cenarioSelect = document.getElementById('cenario');
+    const cenarioTexto = cenarioSelect ? cenarioSelect.selectedOptions[0].text : '';
+    subtitulo.innerHTML = `Simulação concluída com <strong class="text-white">${valores.length.toLocaleString('pt-BR')} caixas</strong> (${rotulo} - ${cenarioTexto}). Linha mais econômica destacada em <strong class="text-green-400">verde</strong>.`;
+  }
+}
+
+
+function simularTodos1000() {
+  if (isRunning) {
+    alert("Aguarde ou pare a simulação atual da garra antes de simular o placar.");
+    return;
+  }
+  const cenario = document.getElementById('cenario').value;
+  let valores = [];
+  for (let i = 0; i < 1000; i++) {
+    valores.push(Math.floor(Math.random() * 900) + 100);
+  }
+
+  if (cenario === 'quase') {
+    valores.sort((a, b) => a - b);
+    for (let k = 0; k < 20; k++) {
+      let p1 = Math.floor(Math.random() * 1000);
+      let p2 = Math.floor(Math.random() * 1000);
+      let tmp = valores[p1]; valores[p1] = valores[p2]; valores[p2] = tmp;
+    }
+  } else if (cenario === 'inverso') {
+    valores.sort((a, b) => b - a);
+  }
+
+  simularTodos(valores, "1.000 Caixas");
 }
 
 // --- CONTROLE PRINCIPAL ---
@@ -517,4 +790,9 @@ async function startSim() {
 window.onload = () => {
     selectAlgo('insertion');
     gerarCaixas();
+    const speedInput = document.getElementById('speed');
+    if (speedInput) {
+      speedInput.addEventListener('input', getDelay);
+      getDelay();
+    }
 };
