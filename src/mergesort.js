@@ -10,7 +10,9 @@ async function execMerge() {
 
   try {
     await mergeSortRec(0, n - 1);
+    hlStep(0);
   } catch (e) {
+    hlStep(0);
     restaurarEstado(estado); // abortou no meio: devolve as caixas ao corredor
     throw e;
   }
@@ -22,6 +24,7 @@ async function mergeSortRec(inicio, fim) {
   await checkAbort();
   if (inicio >= fim) return;
 
+  hlStep(1);
   const meio = Math.floor((inicio + fim) / 2);
   logTerminal(`Dividindo o trecho ${inicio}–${fim} em ${inicio}–${meio} e ${meio + 1}–${fim}`);
 
@@ -44,12 +47,11 @@ async function mesclar(inicio, meio, fim) {
 
   // 1. Leva o trecho inteiro para o transbordo (cada caixa = 1 movimentação)
   logTerminal(`Fundindo ${inicio}–${meio} com ${meio + 1}–${fim}: levando ${tam} caixas ao transbordo...`);
-  hlCode('code-levar', true);
+  hlStep(2);
   for (let k = inicio; k <= fim; k++) {
     await transportar(aux[k], extra.children[k]);
     addMetrica('movs', 1);
   }
-  hlCode('code-levar', false);
 
   // 2. Funde: compara as cabeças das duas metades e devolve a menor ao corredor
   let i = inicio;
@@ -58,6 +60,7 @@ async function mesclar(inicio, meio, fim) {
 
   while (i <= meio && j <= fim) {
     await checkAbort();
+    hlStep(3);
     await highlightCompareCaixas(aux[i], aux[j]);
 
     let escolhida;
@@ -69,16 +72,19 @@ async function mesclar(inicio, meio, fim) {
       escolhida = aux[j];
       j++;
     }
+    hlStep(4);
     await devolverAoCorredor(escolhida, k, ehFusaoFinal);
     k++;
   }
 
   // 3. Sobras de uma das metades
   while (i <= meio) {
+    hlStep(4);
     await devolverAoCorredor(aux[i], k, ehFusaoFinal);
     i++; k++;
   }
   while (j <= fim) {
+    hlStep(4);
     await devolverAoCorredor(aux[j], k, ehFusaoFinal);
     j++; k++;
   }
@@ -87,10 +93,9 @@ async function mesclar(inicio, meio, fim) {
 async function devolverAoCorredor(c, pos, marcarOrdenada) {
   const corredor = document.getElementById('corredor');
   logTerminal(`Devolvendo a caixa ${c.val} para a posição ${pos}...`);
-  hlCode('code-swap', true);
+  hlStep(4);
   await transportar(c, corredor.children[pos]);
   caixas[pos] = c;
   addMetrica('movs', 1);
   if (marcarOrdenada) c.el.classList.add('highlight-sorted');
-  hlCode('code-swap', false);
 }

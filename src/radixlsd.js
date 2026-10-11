@@ -24,36 +24,39 @@ async function execRadix() {
       const nome = NOMES_DIGITO[d];
       const ultimaPassada = (d === DIGITOS_SKU - 1);
 
+      hlStep(1);
+      logTerminal(`Passada ${d + 1}/${DIGITOS_SKU}: selecionando dígito das ${nome.toUpperCase()}...`);
+
       // 1. Distribui, da esquerda para a direita, cada caixa na baia do seu dígito
       for (let i = 0; i < n; i++) {
         await checkAbort();
         const c = caixas[i];
+        hlStep(2);
         const dig = await lerDigito(c, d, exp, nome);
 
+        hlStep(3);
         logTerminal(`Passada ${d + 1}/${DIGITOS_SKU}: levando ${c.val} para a baia ${dig}...`);
-        hlCode('code-dist', true);
         const slot = criarSlotNaBaia(dig);
         await transportar(c, slot, { redimensionar: el => el.classList.add('box-mini') });
         addMetrica('movs', 1);
-        hlCode('code-dist', false);
 
         baias[dig].push(c);
         caixas[i] = null;
       }
 
       // 2. Recolhe as baias na ordem 0..9 e devolve ao corredor
+      hlStep(4);
       logTerminal(`Recolhendo as baias de 0 a 9 (${nome} ordenadas)...`);
       let k = 0;
       for (let b = 0; b < 10; b++) {
         for (let q = 0; q < baias[b].length; q++) {
           const c = baias[b][q];
-          hlCode('code-swap', true);
+          hlStep(4);
           await transportar(c, corredor.children[k], {
             origemSemSlot: true,
             redimensionar: el => el.classList.remove('box-mini')
           });
           addMetrica('movs', 1);
-          hlCode('code-swap', false);
 
           caixas[k] = c;
           if (ultimaPassada) c.el.classList.add('highlight-sorted');
@@ -64,7 +67,9 @@ async function execRadix() {
 
       exp = exp * 10;
     }
+    hlStep(0);
   } catch (e) {
+    hlStep(0);
     restaurarEstado(estado); // abortou no meio: devolve as caixas ao corredor
     throw e;
   }
@@ -80,12 +85,11 @@ async function lerDigito(c, d, exp, nome) {
   c.el.classList.add('highlight-compare');
   addMetrica('leituras', 1);
   logTerminal(`Lendo ${nome} do SKU ${c.val}: dígito ${dig}`);
-  hlCode('code-cmp', true);
+  hlStep(2);
 
   await sleep();
   await checkAbort();
 
-  hlCode('code-cmp', false);
   c.el.classList.remove('highlight-compare');
   c.el.innerText = c.val;
   return dig;

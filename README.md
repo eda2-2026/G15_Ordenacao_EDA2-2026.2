@@ -1,169 +1,159 @@
-# G15_Ordenacao_EDA2-2026.2
-Repositório destinado ao trabalho 2 da matéria Estrutura de Dados 2, semestre 2026.2.
+# 📦 LOGIMAX: Simulador de Algoritmos de Ordenação
+> **Trabalho 2 — Estrutura de Dados 2 (EDA2 - 2026.2)**  
+> Um simulador visual e interativo que coloca algoritmos clássicos de ordenação para organizar o estoque de um centro de distribuição automatizado!
 
-# Simulador de *Algoritmos de Ordenação* do estoque de um galpão fictício
+🔗 **Experimente agora no navegador:** [Acessar Simulador LOGIMAX](https://eda2-2026.github.io/G15_Ordenacao_EDA2-2026.2/)
 
-Simulador que mostra, passo a passo, como diferentes algoritmos de ordenação organizam o estoque de um galpão bagunçado, e compara o que cada um gasta em leituras, movimentações, espaço extra, tempo e custo.
+---
 
-**Link do simulador (GitHub Pages):** _colar aqui o link depois do deploy_
+## 🎥 Vídeo de Apresentação
 
-## Vídeo da apresentação
+_Colar aqui o link do vídeo da apresentação (YouTube, Drive ou Vimeo)._
 
-_Colar aqui o link do vídeo (YouTube, Drive ou outro)._
+---
 
-## O problema
- 
-A **LogiMax Distribuição** (empresa fictícia) é um centro de distribuição fictício. Ela recebe carga de vários fornecedores todos os dias e guarda cada caixa no primeiro espaço livre que aparece. Com o tempo ninguém sabe mais onde está cada produto: o robô leva em média *40 minutos para localizar um item*, os pedidos atrasam há retrabalho e os robôs gastam mais energia e passam mais vezes por manutenção.
+## 🎯 O Cenário: O Caos na LogiMax
 
-A diretoria quer o estoque ordenado pelo **código do produto (SKU)** e precisa escolher **qual algoritmo colocar nos robôs**.
+A **LogiMax Distribuição** recebe centenas de caixas diariamente e as armazena no primeiro espaço vago. O resultado? Um estoque desordenado onde robôs demoram até **40 minutos** para encontrar um único produto! 
 
-## Objetivo da equipe
+Para resolver o gargalo, a empresa precisa ordenar as caixas pelo código **SKU**. Nossa missão é testar e comparar os algoritmos na prática para responder: **qual algoritmo entrega o menor tempo e o menor custo operacional para cada setor do galpão?**
 
-Simular os algoritmos e descobrir qual deles se encaixa melhor em cada cenário do galpão: a prateleira de expedição que já está quase organizada, o estoque geral totalmente bagunçado e o catálogo de SKUs numéricos. A comparação usa as mesmas medidas para todos (leituras, movimentações, espaço extra, tempo e custo), para que a escolha tenha números por trás.
+---
 
-## Do algoritmo ao galpão
+## 🤖 Da Computação ao Chão de Fábrica
 
-| Conceito | No galpão |
-|---|---|
-| Elemento do vetor | Caixa com um SKU |
-| Comparação | Leitura do código de barras de duas caixas |
-| Troca ou movimentação | A garra ou o robô movendo uma caixa |
-| Memória auxiliar | Área de transbordo, um espaço extra no chão |
-| Estabilidade | Caixas com o mesmo SKU não trocam de lugar entre si |
-| Entrada quase ordenada | Prateleira que já estava em ordem e recebeu poucas caixas novas |
+Para tornar o estudo intuitivo, cada conceito de ordenação foi mapeado para a rotina do armazém:
 
-## Algoritmos simulados
+| Conceito Teórico | Representação no Galpão |
+| :--- | :--- |
+| **Elemento do vetor** | 📦 Caixa física identificada pelo código SKU |
+| **Comparação de chaves** | 🔍 Leitor de código de barras escaneando as caixas |
+| **Troca / Deslocamento** | 🦾 Garra robótica movendo caixas pela esteira |
+| **Memória Auxiliar ($O(n)$)** | 🏗️ Área de transbordo no chão do galpão |
+| **Filas / Buckets** | 🏷️ Baias de separação rápida (0 a 9) |
+| **Estabilidade** | 🛡️ Caixas com mesmo SKU não trocam de lugar à toa |
 
-**Insertion Sort**
-- Setor: prateleira de expedição, com cerca de 50 itens, quase em ordem.
-- Por que aqui: cada caixa nova é encaixada no seu lugar, e se quase tudo já está em ordem sobra pouco para mover. Não precisa de espaço extra.
-- Limite: no pior caso faz O(n²), então não serve para o galpão inteiro.
+---
 
-**Merge Sort (recursivo)**
-- Setor: estoque geral, com muitos itens em qualquer ordem.
-- Por que aqui: divide o corredor em trechos, ordena cada um e funde os trechos usando a área de transbordo. O tempo é O(n log n) mesmo no pior caso.
-- Limite: precisa de espaço extra proporcional ao trecho que está sendo fundido.
+## ⚡ Algoritmos em Ação
 
-**Radix Sort LSD**
-- Setor: catálogo com SKUs numéricos de tamanho fixo (no simulador, 3 dígitos).
-- Por que aqui: não compara caixas entre si. Em cada passada distribui as caixas em 10 baias pelo dígito (unidades, dezenas, centenas) e recolhe as baias na ordem de 0 a 9.
-- Limite: só serve para chaves que podem ser separadas em dígitos e precisa de baias extras.
+Testamos quatro abordagens para diferentes necessidades do armazém:
 
-**Bubble Sort (sistema atual, usado como referência)**
-- Compara e troca apenas caixas vizinhas. É o ponto de partida para medir o quanto os outros três melhoram.
+* 📦 **Bubble Sort (Ponto de Partida):**
+  * *Como opera:* Compara caixas vizinhas e troca quando fora de ordem.
+  * *No galpão:* Representa o sistema antigo. Simples, mas ineficiente para grandes volumes.
 
-## Por que todos os algoritmos são estáveis
+* 📥 **Insertion Sort (Expedição):**
+  * *Como opera:* Pega uma nova caixa e encaixa diretamente na vaga correta entre as já ordenadas.
+  * *No galpão:* Excelente para prateleiras **quase ordenadas** que recebem poucos itens novos ($O(n)$ no melhor caso). Não consome espaço extra!
 
-Um algoritmo é estável quando, entre elementos iguais, mantém a ordem em que eles já estavam. No estoque, vários pallets podem ter o mesmo SKU. Se o algoritmo trocasse essas caixas de lugar, o robô gastaria movimentações (tempo, energia e desgaste) sem que o resultado ficasse mais ordenado, já que as caixas são iguais para o critério de ordenação. Escolhendo só algoritmos estáveis, esses movimentos desnecessários não acontecem.
+* 🔄 **Merge Sort (Estoque Geral):**
+  * *Como opera:* Divide o lote pela metade, ordena as partes e faz a intercalação estável.
+  * *No galpão:* Ideal para grandes lotes bagunçados. Mantém tempo previsível de $O(n \log n)$, mas exige **área de transbordo** no chão.
 
-Como cada um garante isso na implementação do simulador:
+* 🏷️ **Radix Sort LSD (Catálogo por Dígitos):**
+  * *Como opera:* Não compara caixas entre si! Distribui em 10 baias dígito a dígito (unidades, dezenas e centenas) em ordem FIFO.
+  * *No galpão:* Extremamente rápido para SKUs numéricos de tamanho fixo, com custo linear $O(d \cdot n)$.
 
-- **Bubble:** só troca quando a caixa da esquerda é estritamente maior que a da direita.
-- **Insertion:** só desloca uma caixa quando ela é estritamente maior que a que está sendo encaixada.
-- **Merge:** em caso de empate na fusão, leva primeiro a caixa do trecho da esquerda (comparação `<=`).
-- **Radix LSD:** cada baia funciona como uma fila, então as caixas saem na ordem em que entraram, e isso se mantém a cada passada.
+---
 
-Por esse motivo, Quick Sort, Heap Sort e Selection Sort, nas versões usuais, ficaram de fora desta comparação, porque podem trocar caixas iguais de posição.
+## 🛡️ Por que a Estabilidade é Fundamental?
 
-## Modelo de custo e tempo
+> 💡 **Regra de Ouro da LogiMax:**  
+> Se duas caixas possuem o mesmo SKU, trocá-las de lugar gasta bateria do robô, tempo de esteira e manutenção sem gerar ganho algum.  
+> Por isso, **todos os algoritmos implementados são estáveis** — garantindo que caixas com códigos iguais nunca se desloquem inutilmente.
 
+---
+
+## 💰 Modelo de Tempo e Custo
+
+O simulador calcula o impacto financeiro e operacional de cada rodada com base em:
+
+$$\text{Custo} = (\text{leituras} \times R\$\,0{,}01) + (\text{movimentações} \times R\$\,0{,}50) + (\text{área extra} \times R\$\,2{,}00)$$
+
+$$\text{Tempo} = (\text{leituras} \times 0{,}5\text{s}) + (\text{movimentações} \times 2{,}0\text{s})$$
+
+---
+
+## 📊 Quadro de Complexidade
+
+| Algoritmo | Melhor Caso | Caso Médio | Pior Caso | Espaço Extra | Estável? |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Bubble Sort** | $O(n)$ | $O(n^2)$ | $O(n^2)$ | $O(1)$ | Sim |
+| **Insertion Sort** | $O(n)$ | $O(n^2)$ | $O(n^2)$ | $O(1)$ | Sim |
+| **Merge Sort** | $O(n \log n)$ | $O(n \log n)$ | $O(n \log n)$ | $O(n)$ | Sim |
+| **Radix Sort LSD** | $O(d \cdot (n+k))$ | $O(d \cdot (n+k))$ | $O(d \cdot (n+k))$ | $O(n+k)$ | Sim |
+
+---
+
+## 🚀 Como Usar o Simulador
+
+1. **Escolha o Algoritmo e Cenário:** Selecione entre *Aleatório*, *Quase Ordenado* ou *Inverso*.
+2. **Controle a Execução:** Clique em **▶ INICIAR** e regule a velocidade (do modo didático lento ao **⚡ Turbo**).
+3. **Acompanhe ao Vivo:** Observe o robô movimentando caixas, o pseudocódigo iluminando cada passo e as métricas atualizando em tempo real.
+4. **Compare no Placar:** Use o botão **SIMULAR TODOS (1000 CAIXAS)** para rodar uma simulação em lote e ver qual algoritmo é coroado como o mais econômico! 🏆
+
+---
+
+## 💻 Como Rodar Localmente
+
+Por ser uma aplicação web pura (HTML5, Tailwind CSS e Vanilla JavaScript), não é necessária nenhuma instalação ou configuração:
+
+```bash
+# Clone o repositório
+git clone https://github.com/eda2-2026/G15_Ordenacao_EDA2-2026.2.git
+
+# Acesse a pasta
+cd G15_Ordenacao_EDA2-2026.2
+
+# Abra no navegador diretamente ou via servidor local:
+python3 -m http.server 8000
 ```
-Custo = leituras x custo_leitura + movimentações x custo_movimento + pallets de área extra x custo_área
-Tempo = leituras x tempo_leitura + movimentações x tempo_movimento
-```
+Depois, abra `http://localhost:8000` ou simplesmente dê dois cliques no arquivo `index.html`.
 
-Os valores abaixo são hipotéticos e ficam no objeto `C`, no início do script do simulador, para serem trocados facilmente.
+---
 
-| Parâmetro | Custo | Tempo |
-|---|---|---|
-| Leitura de código | R$ 0,01 | 0,5 s |
-| Movimentação de caixa | R$ 0,50 | 2 s |
-| Pallet de área extra | R$ 2,00 | não se aplica |
-
-Como as operações são contadas:
-
-- **Bubble:** cada troca conta como 2 movimentações.
-- **Insertion:** cada deslocamento conta 1 movimentação, mais 1 para encaixar a caixa.
-- **Merge:** levar ao transbordo e devolver ao corredor contam como movimentações. A área extra é o maior trecho fundido.
-- **Radix:** ler um dígito conta como 1 leitura. Distribuir nas baias e recolher contam como movimentações. A área extra é o total de caixas.
-
-## Complexidade
-
-| Algoritmo | Melhor | Médio | Pior | Espaço extra | Estável |
-|---|---|---|---|---|---|
-| Bubble | O(n) | O(n²) | O(n²) | O(1) | Sim |
-| Insertion | O(n) | O(n²) | O(n²) | O(1) | Sim |
-| Merge | O(n log n) | O(n log n) | O(n log n) | O(n) | Sim |
-| Radix LSD | O(d·(n+k)) | O(d·(n+k)) | O(d·(n+k)) | O(n+k) | Sim |
-
-No simulador o Bubble roda sem parada antecipada, por isso o melhor caso dele não aparece.
-
-## Como usar o simulador
-
-1. Escolha o algoritmo nos botões: **Bubble Sort**, **Insertion Sort**, **Merge Sort** ou **Radix LSD**.
-2. Escolha o cenário inicial: **Aleatório**, **Quase Ordenado** ou **Ordem Inversa**, e clique em **Novo galpão**.
-3. Use o botão **▶ Iniciar** (que se torna **◼ Parar** durante a execução), controle o ritmo na barra de **Velocidade** e gere novas configurações com **Novo galpão**.
-4. Acompanhe a lógica em tempo real: o código sendo executado, a mensagem do robô no terminal, os contadores de métricas e a prateleira. O Merge exibe a área de transbordo e o Radix apresenta as 10 baias.
-5. Ao concluir, confira as métricas registradas na rodada e atualizadas na tabela do placar de desempenho.
-
-## Como rodar o projeto
-
-Por se tratar de uma aplicação web estática (HTML, CSS e JavaScript), não há necessidade de compilação ou instalação de dependências.
-
-### 1. Execução local
-- **Opção rápida:** Abra o arquivo `index.html` diretamente no seu navegador.
-- **Opção com servidor HTTP local:**
-  ```bash
-  python3 -m http.server 8000
-  ```
-  Depois, acesse no navegador: `http://localhost:8000`.
-
-### 2. Deploy no GitHub Pages
-1. No repositório no GitHub, vá em **Settings** > **Pages**.
-2. Em **Source**, escolha **Deploy from a branch**, selecione a branch `main` e a pasta `/ (root)`, e salve.
-3. O simulador fica imediatamente disponível na URL raiz do Pages: `https://<usuario>.github.io/<repositorio>/`.
-
-## Estrutura do projeto
+## 📁 Estrutura do Projeto
 
 ```
 G15_Ordenacao_EDA2-2026.2/
-├── README.md                   # Documentação do projeto
-├── index.html                  # Interface visual da aplicação (HTML/CSS)
+├── README.md                   # Documentação completa
+├── index.html                  # Interface gráfica (HTML5/Tailwind)
 ├── docs/
-│   └── img/                    # Capturas de tela e imagens da interface
-└── src/                        # Funções e módulos JavaScript dos algoritmos
-    ├── app.js                  # Controle central da interface, robô e estado
-    ├── calculo.js              # Modelo de cálculo de métricas (custo e tempo)
-    ├── bubblesort.js           # Implementação do Bubble Sort
-    ├── insertion.js            # Implementação do Insertion Sort
-    ├── mergesort.js            # Implementação do Merge Sort
-    └── radixlsd.js             # Implementação do Radix Sort LSD
+│   └── img/                    # Capturas de tela do simulador
+└── src/                        # Código-fonte modular
+    ├── app.js                  # Controle central, animação e estado
+    ├── calculo.js              # Modelo de métricas de custo e tempo
+    ├── bubblesort.js           # Algoritmo Bubble Sort
+    ├── insertion.js            # Algoritmo Insertion Sort
+    ├── mergesort.js            # Algoritmo Merge Sort
+    └── radixlsd.js             # Algoritmo Radix Sort LSD
 ```
-
-## Testes
-
-_Registrar aqui os testes feitos no simulador. Modelo sugerido:_
-
-| Cenário | Tamanho | Algoritmo | O que verificar | Resultado | Ok? |
-|---|---|---|---|---|---|
-| Aleatório | 15 | Todos | Corredor termina em ordem crescente | Conforme esperado | Sim |
-| Quase ordenado | 15 | Insertion | Poucas movimentações em relação ao Bubble | Conforme esperado | Sim |
-| Ordem inversa | 15 | Insertion | Pior caso: muitas leituras e movimentações | Conforme esperado | Sim |
-| Qualquer | 15 | Radix LSD | Passadas de unidades, dezenas e centenas, com as 10 baias | Conforme esperado | Sim |
-| Qualquer | 15 | Merge | Transbordo enche e esvazia a cada fusão | Conforme esperado | Sim |
-| Qualquer | 15 | Todos | Valores repetidos continuam na mesma ordem relativa (estabilidade) | Conforme esperado | Sim |
 
 ## Prints da interface
 
-_Adicionar os prints tirados da versão publicada no Pages, por exemplo em `docs/img/`._
+<table>
+  <tr>
+    <td rowspan="2" align="center" valign="middle">
+      <b>Bubble Sort (Painel e Lógica)</b><br><br>
+      <img src="docs/img/bubble.png" alt="Bubble Sort" height="500">
+    </td>
+    <td align="center" valign="middle">
+      <b>Insertion Sort</b><br>
+      <img src="docs/img/insertion.png" alt="Insertion Sort" height="235">
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="middle">
+      <b>Radix Sort LSD (10 Baias)</b><br>
+      <img src="docs/img/radix.png" alt="Radix Sort LSD" height="235">
+    </td>
+  </tr>
+</table>
 
-| Tela | Print |
-|---|---|
-| Visão geral com o corredor e o código | `![visão geral](docs/img/visao-geral.png)` |
-| Insertion Sort com a garra segurando a caixa | `![insertion](docs/img/insertion.png)` |
-| Merge Sort com a área de transbordo | `![merge](docs/img/merge.png)` |
-| Radix LSD com as 10 baias | `![radix](docs/img/radix.png)` |
-| Placar com 1.000 caixas | `![placar](docs/img/placar.png)` |
+| Placar de Desempenho (1.000 caixas) |
+| :---: |
+| ![Placar com 1.000 caixas](docs/img/placar.png) |
 
 
 ## Equipe

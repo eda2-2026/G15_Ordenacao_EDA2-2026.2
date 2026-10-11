@@ -45,55 +45,114 @@ function atualizarCodigo() {
   const p = document.getElementById('code-panel');
   if(algoAtivo === 'bubble') {
     p.innerHTML = `
-      <div>para <span class="text-purple-400">i</span> de 0 até fim:</div>
-      <div class="pl-4">para <span class="text-purple-400">j</span> de 0 até fim - i - 1:</div>
-      <div id="code-cmp" class="pl-8 py-1 transition-colors">se caixa[j] > caixa[j+1]:</div>
-      <div id="code-swap" class="pl-12 text-gray-400 italic transition-colors">trocar caixa[j] com caixa[j+1]</div>
+      <div class="text-yellow-400 font-bold mb-2 pb-1 border-b border-gray-700 text-xs flex justify-between items-center">
+        <span>BUBBLE SORT</span>
+        <span class="text-[10px] text-gray-400 font-normal">O(n²)</span>
+      </div>
+      <div class="space-y-1 font-mono text-xs">
+        <div id="step-1" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent opacity-90">
+          <span class="text-purple-400 font-bold">para</span> <span class="text-sky-300">i</span> <span class="text-purple-400 font-bold">de</span> 0 <span class="text-purple-400 font-bold">até</span> n-1:
+        </div>
+        <div id="step-2" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent pl-4 opacity-90">
+          <span class="text-purple-400 font-bold">se</span> <span class="text-sky-300">caixas[j]</span> &gt; <span class="text-sky-300">caixas[j+1]</span>:
+        </div>
+        <div id="step-3" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent pl-8 opacity-90">
+          <span class="text-yellow-300 font-semibold">trocar</span>(<span class="text-sky-300">caixas[j]</span>, <span class="text-sky-300">caixas[j+1]</span>)
+        </div>
+        <div id="step-4" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent pl-4 opacity-90">
+          <span class="text-green-400 font-semibold">consolidar</span>(<span class="text-sky-300">caixas[n-1-i]</span>)
+        </div>
+      </div>
     `;
   } else if(algoAtivo === 'insertion') {
     p.innerHTML = `
-      <div>para <span class="text-purple-400">i</span> de 1 até fim:</div>
-      <div class="pl-4 text-gray-400">pivo = caixa[i]; j = i - 1</div>
-      <div id="code-cmp" class="pl-4 py-1 transition-colors">enqnt j >= 0 e caixa[j] > pivo:</div>
-      <div id="code-swap" class="pl-8 text-gray-400 italic transition-colors">caixa[j+1] = caixa[j]; j--</div>
-      <div class="pl-4 text-gray-400">caixa[j+1] = pivo</div>
+      <div class="text-yellow-400 font-bold mb-2 pb-1 border-b border-gray-700 text-xs flex justify-between items-center">
+        <span>INSERTION SORT</span>
+        <span class="text-[10px] text-gray-400 font-normal">O(n²)</span>
+      </div>
+      <div class="space-y-1 font-mono text-xs">
+        <div id="step-1" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent opacity-90">
+          <span class="text-purple-400 font-bold">para</span> <span class="text-sky-300">i</span> <span class="text-purple-400 font-bold">de</span> 1 <span class="text-purple-400 font-bold">até</span> n-1 (<span class="text-sky-200">pivo</span> = <span class="text-sky-300">caixas[i]</span>):
+        </div>
+        <div id="step-2" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent pl-4 opacity-90">
+          <span class="text-purple-400 font-bold">enquanto</span> <span class="text-sky-300">j</span> &gt; 0 <span class="text-purple-400 font-bold">e</span> <span class="text-sky-300">caixas[j-1]</span> &gt; <span class="text-sky-300">pivo</span>:
+        </div>
+        <div id="step-3" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent pl-8 opacity-90">
+          <span class="text-yellow-300 font-semibold">deslocar</span>(<span class="text-sky-300">caixas[j-1]</span> → <span class="text-sky-300">j</span>)
+        </div>
+        <div id="step-4" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent pl-4 opacity-90">
+          <span class="text-green-400 font-semibold">inserir</span>(<span class="text-sky-300">pivo</span> na vaga <span class="text-sky-300">j</span>)
+        </div>
+      </div>
     `;
   } else if(algoAtivo === 'merge') {
     p.innerHTML = `
-      <div>função <span class="text-purple-400">MergeSort</span>(inicio, fim):</div>
-      <div class="pl-4">se inicio &lt; fim:</div>
-      <div class="pl-8 text-gray-400">meio = (inicio + fim) / 2</div>
-      <div class="pl-8 text-gray-400">MergeSort(inicio, meio)</div>
-      <div class="pl-8 text-gray-400">MergeSort(meio + 1, fim)</div>
-      <div class="pl-8 text-gray-400">Merge(inicio, meio, fim)</div>
-      <div class="mt-3">função <span class="text-purple-400">Merge</span>(inicio, meio, fim):</div>
-      <div id="code-levar" class="pl-4 py-1 text-gray-400 transition-colors">levar caixa[inicio..fim] ao transbordo</div>
-      <div class="pl-4 text-gray-400">enqnt esq e dir tiverem caixas:</div>
-      <div id="code-cmp" class="pl-8 py-1 transition-colors">se esq &lt;= dir:</div>
-      <div id="code-swap" class="pl-12 text-gray-400 italic transition-colors">devolver a menor ao corredor</div>
-      <div class="pl-4 text-gray-400">devolver as caixas que sobraram</div>
+      <div class="text-yellow-400 font-bold mb-2 pb-1 border-b border-gray-700 text-xs flex justify-between items-center">
+        <span>MERGE SORT</span>
+        <span class="text-[10px] text-gray-400 font-normal">O(n log n)</span>
+      </div>
+      <div class="space-y-1 font-mono text-xs">
+        <div id="step-1" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent opacity-90">
+          <span class="text-purple-400 font-bold">dividir</span>(<span class="text-sky-300">inicio</span>, <span class="text-sky-300">meio</span>) <span class="text-purple-400 font-bold">e</span> <span class="text-purple-400 font-bold">dividir</span>(<span class="text-sky-300">meio+1</span>, <span class="text-sky-300">fim</span>)
+        </div>
+        <div id="step-2" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent pl-4 opacity-90">
+          <span class="text-yellow-300 font-semibold">transbordo</span> = <span class="text-sky-300">copiar</span>(<span class="text-sky-300">caixas[inicio..fim]</span>)
+        </div>
+        <div id="step-3" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent pl-4 opacity-90">
+          <span class="text-purple-400 font-bold">se</span> <span class="text-sky-300">transbordo[i]</span> &le; <span class="text-sky-300">transbordo[j]</span>:
+        </div>
+        <div id="step-4" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent pl-8 opacity-90">
+          <span class="text-green-400 font-semibold">devolverAoCorredor</span>(<span class="text-sky-300">menor_caixa</span>)
+        </div>
+      </div>
     `;
   } else {
     p.innerHTML = `
-      <div>para <span class="text-purple-400">dígito</span> (unid, dez, cent):</div>
-      <div class="pl-4 text-gray-400">para cada caixa, da esquerda p/ direita:</div>
-      <div id="code-cmp" class="pl-8 py-1 transition-colors">ler o dígito da caixa</div>
-      <div id="code-dist" class="pl-8 py-1 text-gray-400 transition-colors">distribuir nas baias[dígito]</div>
-      <div id="code-swap" class="pl-4 text-gray-400 italic transition-colors">recolher caixas das baias (0 a 9)</div>
+      <div class="text-yellow-400 font-bold mb-2 pb-1 border-b border-gray-700 text-xs flex justify-between items-center">
+        <span>RADIX SORT LSD</span>
+        <span class="text-[10px] text-gray-400 font-normal">O(d · n)</span>
+      </div>
+      <div class="space-y-1 font-mono text-xs">
+        <div id="step-1" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent opacity-90">
+          <span class="text-purple-400 font-bold">para cada</span> <span class="text-sky-300">digito</span> <span class="text-purple-400 font-bold">em</span> [<span class="text-yellow-300">U</span>, <span class="text-yellow-300">D</span>, <span class="text-yellow-300">C</span>]:
+        </div>
+        <div id="step-2" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent pl-4 opacity-90">
+          <span class="text-sky-300">d</span> = <span class="text-yellow-300 font-semibold">extrairDigito</span>(<span class="text-sky-300">caixa.sku</span>, <span class="text-sky-300">digito</span>)
+        </div>
+        <div id="step-3" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent pl-4 opacity-90">
+          <span class="text-sky-300">baias[d]</span>.<span class="text-yellow-300 font-semibold">enfileirar</span>(<span class="text-sky-300">caixa</span>)
+        </div>
+        <div id="step-4" class="px-2 py-0.5 rounded transition-all border-l-4 border-transparent opacity-90">
+          <span class="text-green-400 font-semibold">recolherBaias</span>(<span class="text-sky-300">baias[0..9]</span> → <span class="text-sky-300">corredor</span>)
+        </div>
+      </div>
     `;
   }
 }
 
-function hlCode(id, active) {
-  const el = document.getElementById(id);
-  if(!el) return;
-  if(active) {
-    el.classList.add('bg-blue-900/50', 'border-l-4', 'border-yellow-400', 'font-bold', 'text-white');
-    el.classList.remove('text-gray-400');
-  } else {
-    el.classList.remove('bg-blue-900/50', 'border-l-4', 'border-yellow-400', 'font-bold', 'text-white');
-    if(id !== 'code-cmp') el.classList.add('text-gray-400');
+function hlStep(step) {
+  for (let s = 1; s <= 4; s++) {
+    const el = document.getElementById(`step-${s}`);
+    if (!el) continue;
+    if (step === 0) {
+      el.classList.remove('bg-blue-950/80', 'border-yellow-400', 'shadow-sm', 'opacity-50');
+      el.classList.add('border-transparent', 'opacity-90');
+    } else if (s === step) {
+      el.classList.add('bg-blue-950/80', 'border-yellow-400', 'shadow-sm');
+      el.classList.remove('border-transparent', 'opacity-50');
+    } else {
+      el.classList.remove('bg-blue-950/80', 'border-yellow-400', 'shadow-sm');
+      el.classList.add('border-transparent', 'opacity-50');
+    }
   }
+}
+
+function hlCode(id, active) {
+  if (!active) return;
+  if (id === 'code-cmp') hlStep(2);
+  else if (id === 'code-swap') hlStep(3);
+  else if (id === 'code-levar') hlStep(2);
+  else if (id === 'code-dist') hlStep(3);
 }
 
 function logTerminal(msg) {
@@ -742,6 +801,7 @@ async function startSim() {
     document.getElementById('btn-iniciar').classList.replace('hover:bg-red-500', 'hover:bg-green-500');
     isRunning = false;
     abortando = true;
+    hlStep(0);
     logTerminal("Simulação abortada.");
     return;
   }
@@ -752,6 +812,7 @@ async function startSim() {
 
   isRunning = true;
   abortController = new AbortController();
+  hlStep(0);
   document.getElementById('btn-iniciar').innerText = "◼ PARAR";
   document.getElementById('btn-iniciar').classList.replace('bg-green-600', 'bg-red-600');
   document.getElementById('btn-iniciar').classList.replace('hover:bg-green-500', 'hover:bg-red-500');
@@ -780,6 +841,7 @@ async function startSim() {
   } finally {
     isRunning = false;
     abortando = false;
+    hlStep(0);
     document.getElementById('btn-iniciar').innerText = "▶ INICIAR";
     document.getElementById('btn-iniciar').classList.replace('bg-red-600', 'bg-green-600');
     document.getElementById('btn-iniciar').classList.replace('hover:bg-red-500', 'hover:bg-green-500');
