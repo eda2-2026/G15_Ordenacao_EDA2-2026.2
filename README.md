@@ -8,7 +8,7 @@
 
 ## 🎥 Vídeo de Apresentação
 
-_Colar aqui o link do vídeo da apresentação (YouTube, Drive ou Vimeo)._
+ **Link do vídeo:** [Video da Apresentação](https://youtu.be/Og0SDgjBhdY).
 
 ---
 
@@ -106,11 +106,9 @@ git clone https://github.com/eda2-2026/G15_Ordenacao_EDA2-2026.2.git
 # Acesse a pasta
 cd G15_Ordenacao_EDA2-2026.2
 
-# Abra no navegador diretamente ou via servidor local:
-python3 -m http.server 8000
+# Recomendação é instalação da extensão live server executando pela extensão. 
 ```
-Depois, abra `http://localhost:8000` ou simplesmente dê dois cliques no arquivo `index.html`.
-
+Outra opção é abrindo o index.html pela pasta raiz
 ---
 
 ## 📁 Estrutura do Projeto
