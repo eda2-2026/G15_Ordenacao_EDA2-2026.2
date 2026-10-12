@@ -16,7 +16,7 @@
 
 A **LogiMax Distribuição** recebe centenas de caixas diariamente e as armazena no primeiro espaço vago. O resultado? Um estoque desordenado onde robôs demoram até **40 minutos** para encontrar um único produto! 
 
-Para resolver o gargalo, a empresa precisa ordenar as caixas pelo código **SKU**. Nossa missão é testar e comparar os algoritmos na prática para responder: **qual algoritmo entrega o menor tempo e o menor custo operacional para cada setor do galpão?**
+Para resolver o gargalo, a empresa precisa ordenar as caixas pelo código **SKU** numérico. Nossa missão é testar e comparar os algoritmos na prática para responder: **qual algoritmo entrega o menor tempo e o menor custo operacional para cada setor do galpão?**
 
 ---
 
@@ -26,10 +26,10 @@ Para tornar o estudo intuitivo, cada conceito de ordenação foi mapeado para a 
 
 | Conceito Teórico | Representação no Galpão |
 | :--- | :--- |
-| **Elemento do vetor** | 📦 Caixa física identificada pelo código SKU |
+| **Elemento do vetor** | 📦 Caixa física identificada pelo código SKU numérico |
 | **Comparação de chaves** | 🔍 Leitor de código de barras escaneando as caixas |
 | **Troca / Deslocamento** | 🦾 Garra robótica movendo caixas pela esteira |
-| **Memória Auxiliar ($O(n)$)** | 🏗️ Área de transbordo no chão do galpão |
+| **Memória Auxiliar (O(n))** | 🏗️ Área de transbordo no chão do galpão |
 | **Filas / Buckets** | 🏷️ Baias de separação rápida (0 a 9) |
 | **Estabilidade** | 🛡️ Caixas com mesmo SKU não trocam de lugar à toa |
 
